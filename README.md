@@ -2,7 +2,9 @@
 a structure-based multimodal prediction model for drug-disease repositioning 
 
 ptython=3.10
+
 torch=2.4.1+cuda121
+
 DGL >= 0.5.2
 
 Run main.py to train SMPR
