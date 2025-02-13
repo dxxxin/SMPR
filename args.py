@@ -4,14 +4,14 @@ parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFo
 # General Arguments
 parser.add_argument('-id', '--device_id', default=0, type=str,
                     help='Set the device (GPU ids).')
-parser.add_argument('-da', '--dataset', type=str, choices=['Bdataset', 'Kdataset'], default='Kdataset',
+parser.add_argument('-da', '--dataset', type=str, choices=['Fdataset', 'Kdataset','cold_start'], default='cold_start',
                     help='Set the data set for training.')
 parser.add_argument('-sp', '--saved_path', type=str,
                     help='Path to save training results', default='result')
 parser.add_argument('-se', '--seed', default=42, type=int,
                     help='Global random seed')
 # Training Arguments
-parser.add_argument('-fo', '--nfold', default=10, type=int,
+parser.add_argument('-fo', '--nfold', default=5, type=int,
                     help='The number of k in K-folds Validation')
 parser.add_argument('-ep', '--epoch', default=4000, type=int,
                     help='Number of epochs for training')

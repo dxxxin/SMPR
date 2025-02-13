@@ -70,18 +70,29 @@ def train():
         # remove test set DDA from train graph
         g = remove_graph(g, test_pos_id[:, :-1]).to(device)
 
+        #删除20%药物-疾病连接关系 测试
+        #删除20%
+        #ransample = random.sample(range(len(train_pos_id)), int(len(train_pos_id)*0.2))
+        #g = remove_graph(g, train_pos_id[ransample, :-1]).to(device)
+        print(args.dataset)
         if args.dataset == 'Kdataset':
             feature = {'drug': g.nodes['drug'].data['h'],
                        'disease': g.nodes['disease'].data['h'],
                        'protein': g.nodes['protein'].data['h'],
                        'gene': g.nodes['gene'].data['h'],
                        'pathway': g.nodes['pathway'].data['h']}
-        elif args.dataset == 'Bdataset':
+        elif args.dataset == 'cold_start':
+            feature = {'drug': g.nodes['drug'].data['h'],
+                       'disease': g.nodes['disease'].data['h'],
+                       'protein': g.nodes['protein'].data['h'],
+                       'gene': g.nodes['gene'].data['h'],
+                       'pathway': g.nodes['pathway'].data['h']}
+        elif args.dataset == 'Fdataset':
             feature = {'drug': g.nodes['drug'].data['h'],
                        'disease': g.nodes['disease'].data['h'],
                        'protein': g.nodes['protein'].data['h']}
 
-            # get the mask list for train and test set that used for performance calculation
+        # get the mask list for train and test set that used for performance calculation
         print('df', df.shape)
         mask_label = np.ones(df.shape)
         mask_label[test_pos_idx[0], test_pos_idx[1]] = 0
@@ -126,16 +137,28 @@ def train():
         stopper = EarlyStopping(patience=args.patience, saved_path=args.saved_path)
 
         # model training
+        spl_r = 0.005
         for epoch in range(1, args.epoch + 1):
             model.train()
             score, D, R = model(g, feature, ECPFs)
             pred = th.sigmoid(score)
             # pred = score
 
-            # 添加正样本惩罚
-            loss = criterion(score[mask_train].cpu().flatten(),
-                             label[mask_train].cpu().flatten())
-            loss = loss*th.tensor(len(train_neg_idx[0]) / len(train_pos_idx[0]))
+            #pred_spl = score[mask_train].flatten()
+            #true_spl = label[mask_train].flatten()
+
+            '''temp_true = true_spl.detach().numpy()
+            spl_index_pos = np.argwhere(temp_true==1)
+            spl_index_neg = np.argwhere(temp_true==0)
+            spl_index_neg = random.sample(list(spl_index_neg), int(len(spl_index_neg)*spl_r))
+            true_spl = torch.cat((true_spl[spl_index_neg], true_spl[spl_index_pos]))
+            pred_spl = torch.cat((pred_spl[spl_index_neg], pred_spl[spl_index_pos]))'''
+
+            #loss = criterion(pred_spl, true_spl)
+            loss = criterion(score[mask_train].flatten(), label[mask_train].flatten())
+            #spl_r = spl_r + 0.1 * spl_r / loss
+            #if spl_r > 1:
+            #    spl_r = 1
 
             optimizer.zero_grad()
             loss.backward()
@@ -151,8 +174,8 @@ def train():
             if epoch % 50 == 0:
                 AUC, AUPR = get_metrics_auc(label[mask_test].cpu().detach().numpy(),
                                             pred[mask_test].cpu().detach().numpy())
-                print('Epoch {} Loss: {:.3f}; Train AUC {:.3f}; AUC {:.3f}; AUPR: {:.3f}'.format(epoch, loss.item(),
-                                                                                                 AUC_, AUC, AUPR))
+                print('Epoch {} Loss: {:.3f}; Train AUC {:.3f}; AUC {:.3f}; AUPR: {:.3f}; spl_r: {:.3f}'.format(epoch, loss.item(),
+                                                                                                 AUC_, AUC, AUPR, spl_r))
 
                 print('-' * 50)
                 if early_stop:
@@ -171,33 +194,39 @@ def train():
         AUC, aupr, acc, f1, pre, rec, spec, _ = get_metrics(label.cpu().detach().numpy().flatten(),
                                                             pred_result.flatten())
         print(
-            'Overall: AUC {:.3f}; AUPR: {:.3f}; Acc: {:.3f}; F1: {:.3f}; Precision {:.3f}; Recall {:.3f}'.
-                format(AUC, aupr, acc, f1, pre, rec))
+            'Overall: AUC {:.3f}; AUPR: {:.3f}; Acc: {:.3f}; F1: {:.3f}; Precision {:.3f}; Recall {:.3f}; Spec {:.3f}'.
+                format(AUC, aupr, acc, f1, pre, rec, spec))
         acc_result.append([AUC, aupr, acc, f1, pre, rec, spec])
         if AUC + aupr > min_auc_aupr:
-            th.save(model,'./save_model_decode2/best_model.pth')
+            th.save(model,'./save_model_spl/best_model.pth')
             min_auc_aupr = AUC + aupr
         th.save(model,
-                './save_model_decode2/fold' + str(fold) + '_' + str(round(AUC, 2)) + '_' + str(round(aupr, 2)) + '.pth')
-        # with open('./save_model4000/fold'+str(fold)+'_'+str(round(AUC, 4))+'_'+str(round(aupr, 4))+'.pkl', 'wb') as file:
-        #    pickle.dump(D, file)
-
+                './save_model_spl/fold' + str(fold) + '_' + str(round(AUC, 2)) + '_' + str(round(aupr, 2)) + '.pth')
+        with open('./save_cold_start/fold'+str(fold)+'_'+str(round(AUC, 2))+'_'+str(round(aupr, 2))+'.pkl', 'wb') as file:
+            pickle.dump(D, file)
+        with open('./save_cold_start/fold'+str(fold)+'_'+str(round(AUC, 2))+'_'+str(round(aupr, 2))+'_R.pkl', 'wb') as file:
+            pickle.dump(R, file)
+        with open('./save_cold_start/fold'+str(fold)+'_'+str(round(AUC, 2))+'_'+str(round(aupr, 2))+'_pred.pkl', 'wb') as file:
+            pickle.dump(pred, file)
         fold += 1
 
-    g, drug_structre, ECPFs = load(args.dataset)
+    #pd.DataFrame(acc_result, columns=['AUC', 'aupr', 'acc', 'f1', 'pre', 'rec', 'spec']).to_csv(
+    #    'Fdataset_acc_result_decode.csv', index=False)
+
+    '''g, drug_structre, ECPFs = load(args.dataset)
     print('ECPFs.shape', ECPFs.shape)
     ECPFs = th.tensor(ECPFs).float()
     feature = {'drug': g.nodes['drug'].data['h'],
                'disease': g.nodes['disease'].data['h'],
                'protein': g.nodes['protein'].data['h'],
                'gene': g.nodes['gene'].data['h'],
-               'pathway': g.nodes['pathway'].data['h']}
+               'pathway': g.nodes['pathway'].data['h']}'''
 
-    model = torch.load('save_model4000/fold5_0.99_0.61.pth')
-    model.eval()
+    #model = torch.load('save_model4000/fold5_0.99_0.61.pth')
+    #model.eval()
 
-    score, D, R = model(g, feature, ECPFs)
-    pred = th.sigmoid(score).cpu().detach().numpy()
+    #score, D, R = model(g, feature, ECPFs)
+    #pred = th.sigmoid(score).cpu().detach().numpy()
     #print('best_model:',min_auc_aupr)
     #with open('./save_model_decode2/D.pkl', 'wb') as file:
     #    pickle.dump(D.detach().numpy(), file)
@@ -205,8 +234,10 @@ def train():
     #    pickle.dump(R.detach().numpy(), file)
     #with open('./save_model_decode2/pred.pkl', 'wb') as file:
     #     pickle.dump(pred, file)
-    pd.DataFrame(pred).to_csv('result_4000.csv', index=False, header=False)
-    #pd.DataFrame(acc_result, columns=['AUC', 'aupr', 'acc', 'f1', 'pre', 'rec', 'spec']).to_csv('save_model_decode2/acc_result_decode.csv',index=False)
+
+
+    #pd.DataFrame(pred).to_csv('result_4000.csv', index=False, header=False)
+
 
 
 if __name__ == '__main__':

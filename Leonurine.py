@@ -50,7 +50,7 @@ def drugs_Similarity(model_file, model_path, smile):
         result.append([fd[i], dis, cosine, correlation, p_value])
     #pd.DataFrame(result, columns=['id', 'distance', 'cos', 'correlation', 'p_value']).to_csv('Leonurine_Euclidean.csv',
     #                                                                                  index=False)
-    return np.array(result)
+    return np.array(result),R
 
 def get_pred_matrix(pred_path):
     fd = open(pred_path+'/pred.pkl', 'rb')
@@ -73,12 +73,12 @@ def min_max_normalize(data):
     normalized_data = (data - min_val) / (max_val - min_val)
     return normalized_data
 
-def get_target_relation(smile, max_stack=100, dis='eud'):
+def get_target_relation(smile, max_stack=100, dis='eud', pknow=''):
     relation = get_pred_matrix('save_model4000/')
     distance = drugs_Similarity('save_model4000/fold5_0.99_0.61.pth','save_model4000/', smile)
-    pknow = pd.read_csv('dataset/Leonurine/Prior_knowledge.csv',header=None, index_col=False).T
+    #pknow = pd.read_csv('dataset/Leonurine/Prior_knowledge.csv',header=None, index_col=False).T
     col = np.array(pd.read_csv('dataset/Leonurine/disease.csv', index_col=False))[:,1]
-    pknow.index = col
+    #pknow.index = col
 
     index= 1
     if dis =='eud':
@@ -96,8 +96,13 @@ def get_target_relation(smile, max_stack=100, dis='eud'):
 
     result = np.sum(top_maxtrix, axis=0)
 
-    for ind in result.index:
-        result.loc[ind] = result.loc[ind] + float(pknow.loc[ind])
+    if pknow == '':
+        for ind in result.index:
+            result.loc[ind] = result.loc[ind]
+    else:
+        pknow.index = col
+        for ind in result.index:
+            result.loc[ind] = result.loc[ind] + float(pknow.loc[ind])
 
     result = min_max_normalize(result)
     result = result.T.sort_values(ascending=False)
@@ -108,12 +113,18 @@ def get_target_relation(smile, max_stack=100, dis='eud'):
 
 
 #益母草碱
-smile = 'COC1=CC(=CC(=C1O)OC)C(=O)OCCCCN=C(N)N'
-result = get_target_relation(smile, dis='edu')
+#smile = 'COC1=CC(=CC(=C1O)OC)C(=O)OCCCCN=C(N)N'
+#result = get_target_relation(smile, dis='edu')
 #pd.DataFrame(result, columns=['score']).to_csv('益母草碱_all_diseases.csv')
-print(result)
-#pd.DataFrame(result, columns=['score']).to_csv('Leonurine_relation_disease.csv')
+#print(result)
+#pd.DataFrame(result, columns=['score']).to_csv('Leonurine_relation_disease2.csv')
 
+#丹参
+#smile = 'C1=CC(=C(C=C1C[C@H](C(=O)O)OC(=O)/C=C/C2=C3[C@@H]([C@H](OC3=C(C=C2)O)C4=CC(=C(C=C4)O)O)C(=O)O[C@H](CC5=CC(=C(C=C5)O)O)C(=O)O)O)O'
+#print(smile)
+#result = get_target_relation(smile, dis='edu')
+#print(result)
+#pd.DataFrame(result, columns=['score']).to_csv('丹參酚酸B_all_diseases.csv')
 
 
 

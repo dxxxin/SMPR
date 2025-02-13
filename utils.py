@@ -44,6 +44,7 @@ def get_metrics(real_score, predict_score):
     predict_score_matrix = np.tile(predict_score, (thresholds_num, 1))
     #print('predict_score_matrix',predict_score_matrix.shape)
 
+    thresholds = np.array([[0.24]])
     negative_index = np.where(predict_score_matrix < thresholds.T)
     positive_index = np.where(predict_score_matrix >= thresholds.T)
     predict_score_matrix[negative_index] = 0
