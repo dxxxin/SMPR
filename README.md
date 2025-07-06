@@ -50,3 +50,6 @@ Dataset C contains 579 drugs and 274 diseases.<br>
 ## Files :  
     An executable program can be downloaded and used directly on a Windows system.  
     The exe file is available at https://drive.google.com/file/d/1Z-9kS8z5skg0C1SyKYjGWP_37AtIQgnc/view?usp=drive_link
+
+## Cite:
+    Dong, Xin, et al. "SMPR: A structure-enhanced multimodal drug-disease prediction model for drug repositioning and cold start." arXiv preprint arXiv:2503.13322 (2025).
