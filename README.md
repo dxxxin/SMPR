@@ -28,7 +28,11 @@ Dataset C contains 579 drugs and 274 diseases.
     DGL >= 0.5.2
 
 ###Use the model:
+    The model reposition results are saved in result_4000.csv
+
     For model training, please run Python main.py directly.
+
+    model_300dim.pkl is the mol2vec saved model.
 
     The trained model and results are saved in save_model4000/:
     D.pkl is the disease embedding feature.
