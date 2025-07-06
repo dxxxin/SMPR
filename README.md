@@ -7,11 +7,11 @@ SMPR:a structure-based multimodal prediction model for drug-disease repositionin
 ![](img/SMPR.png)
 
 ## Introduction: 
-SMPR is a drug disease repositioning model.<br>
-The model has made improvements to address the following issues:<br>
-1.Enhance the importance of drug structure.<br>
-2.Drug cold start. Effective prediction can also be made for drugs that are not in the dataset.<br>
-3.Facing pharmacological workers. Provide executable software for convenient use.<br>
+    SMPR is a drug disease repositioning model.
+    The model has made improvements to address the following issues:
+    1.Enhance the importance of drug structure.
+    2.Drug cold start. Effective prediction can also be made for drugs that are not in the dataset.
+    3.Facing pharmacological workers. Provide executable software for convenient use.
 
 SMPR provides two datasets, Dataset A and Dataset C. The cold start training dataset is modified based on Dataset A.<br>
 Dataset A contains 894 drugs and 454 diseases.<br>
