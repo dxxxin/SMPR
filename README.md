@@ -4,6 +4,9 @@
 ###SMPR:
 SMPR:a structure-based multimodal prediction model for drug-disease repositioning
 
+###model :
+![](img/SMPR.png)
+
 ###Introduction :
 SMPR is a drug disease repositioning model.
 The model has made improvements to address the following issues:
@@ -18,9 +21,6 @@ Dataset C contains 579 drugs and 274 diseases.
 ![](img/Dataset_A.png)
 ###The Dataset C:
 ![](img/Dataset_C.png)
-
-###model :
-![](img/SMPR.jpg)
 
 ###requirements :
     ptython=3.10
