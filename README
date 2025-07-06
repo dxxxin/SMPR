@@ -1,0 +1,43 @@
+
+#########
+
+###SMPR:
+SMPR:a structure-based multimodal prediction model for drug-disease repositioning
+
+###Introduction :
+SMPR is a drug disease repositioning model.
+The model has made improvements to address the following issues:
+1.Enhance the importance of drug structure.
+2.Drug cold start. Effective prediction can also be made for drugs that are not in the dataset。
+3.Facing pharmacological workers. Provide executable software for convenient use.
+
+SMPR provides two datasets, Dataset A and Dataset C. The cold start training dataset is modified based on Dataset A.
+Dataset A contains 894 drugs and 454 diseases.
+Dataset C contains 579 drugs and 274 diseases.
+###The Dataset A:
+![](img/Dataset_A.png)
+###The Dataset C:
+![](img/Dataset_C.png)
+
+###model :
+![](img/SMPR.jpg)
+
+###requirements :
+    ptython=3.10
+    torch=2.4.1+cuda121
+    DGL >= 0.5.2
+
+###Use the model:
+    For model training, please run Python main.py directly.
+    The training main parameters that can be called include: 
+    1. --dataset, defult Kdataset, Fdataset (Dataset F), Kdataset (Dataset A),cold_start
+    2. --nfold, defult 5
+    3. --learning_rate, default 0.005
+    4. --hidden_feats, default 64
+
+    For the cold start:
+    For a cold start, recommand Leonurine.py. You can add a prior knowledge for new drug, the relationship between drug and diseases of Kdataset, can recommand dataset/Leonurine/Prior_knowledge.csv
+
+###Files :
+    An executable program can be downloaded and used directly on a Windows system.
+    The exe file is available at https://drive.google.com/file/d/1Z-9kS8z5skg0C1SyKYjGWP_37AtIQgnc/view?usp=drive_link
